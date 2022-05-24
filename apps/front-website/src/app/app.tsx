@@ -1,5 +1,5 @@
 import { useStoreRehydrated } from 'easy-peasy';
-import { Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { extendTheme, ChakraProvider } from '@chakra-ui/react';
 
 import { Home } from './home/home';
@@ -20,7 +20,9 @@ const ui = (child: ReactJSXElement) => (
 export function App() {
   const isRehydrated = useStoreRehydrated();
   return isRehydrated ? (
-    <Route path="/" exact render={() => ui(<Home />)} />
+    <Routes>
+      <Route path="/" element={ui(<Home />)} />
+    </Routes>
   ) : (
     <div>Loading...</div>
   );
