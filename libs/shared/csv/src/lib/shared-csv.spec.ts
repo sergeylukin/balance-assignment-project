@@ -1,7 +1,7 @@
-import { sharedCsv } from './shared-csv';
+import { Convert2JSON } from './shared-csv';
 
 describe('sharedCsv', () => {
   it('should work', () => {
-    expect(sharedCsv()).toEqual('shared-csv');
+    expect(Convert2JSON('1,2,3\nfoo,bar,baz', ',', '2')).toEqual(['bar']);
   });
 });

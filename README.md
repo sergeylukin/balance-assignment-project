@@ -35,6 +35,12 @@ hey, we love bullet-proof solutions don't we).
 The `--build` flag makes sure docker images are re-built and are
 up-to-date (should be fast assuming docker layers are cached by default).
 
+## Apps/Libraries relations
+
+<img src="./architecture-deps.png" alt="Optimized docker production architecture" width="650" />
+
+**Hint:** you can re-generate dependencies graph by running `npx nx graph`
+
 ## Nuking database
 
 Postgres data land resides at `./tmp/postgres` so at any point you could

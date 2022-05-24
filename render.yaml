@@ -41,7 +41,7 @@ services:
     env: static
     domains:
       - balance.sergeylukin.com
-    buildCommand: 'npm run build:web'
+    buildCommand: 'npm run test:afected && npm run build:web'
     staticPublishPath: ./dist/apps/front-website
     headers:
       - path: /*
