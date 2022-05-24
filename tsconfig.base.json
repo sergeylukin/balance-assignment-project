@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@balance/api-interfaces": ["libs/api-interfaces/src/index.ts"],
+      "@balance/api/data-service": ["libs/api/data-service/src/index.ts"],
       "@balance/front-website/api": ["libs/front-website/api/src/index.ts"],
       "@balance/front-website/feature-pivots-list": [
         "libs/front-website/feature-pivots-list/src/index.ts"

@@ -3,11 +3,11 @@ import { Convert2JSON } from '@balance/shared/csv';
 import axios from 'axios';
 import { IPivot, ICreatePivotParams } from '@balance/api-interfaces';
 
-import { PrismaService } from './prisma.service';
+import { DataService } from '@balance/api/data-service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly dataService: PrismaService) {}
+  constructor(private readonly dataService: DataService) {}
 
   @Get('pivots')
   async getAllPivots(): Promise<IPivot[]> {
