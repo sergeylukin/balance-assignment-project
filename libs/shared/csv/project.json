@@ -1,5 +1,4 @@
 {
-  "root": "libs/shared/csv",
   "sourceRoot": "libs/shared/csv/src",
   "targets": {
     "build": {

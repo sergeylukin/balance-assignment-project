@@ -1,5 +1,4 @@
 {
-  "root": "apps/front-website",
   "sourceRoot": "apps/front-website/src",
   "projectType": "application",
   "targets": {
