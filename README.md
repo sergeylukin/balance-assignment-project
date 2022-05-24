@@ -1,94 +1,177 @@
+# JUSTT
 
+## Live demos
 
-# Balance
+API Swagger:
 
-This project was generated using [Nx](https://nx.dev).
+https://balance.sergeylukin.com/api/
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+LIVE demo (auto synced with `main` branch)
 
-🔎 **Smart, Fast and Extensible Build System**
+https://balance.sergeylukin.com/
 
-## Adding capabilities to your workspace
+## Quick start
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+For quick start, run
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+```bash
+# copy project environment variables and spin up
+cp .env.example .env && docker-compose up
+```
 
-Below are our core plugins:
+and visit `http://localhost/`
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+To make it more bullet-proof during
+development process, use following command instead:
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+```bash
+docker-compose up --remove-orphans --build
+```
 
-## Generate an application
+The `--remove-orphans` is here to prevent sibling projects with same
+name and services from interfering with each other (not likely to happen but
+hey, we love bullet-proof solutions don't we).
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+The `--build` flag makes sure docker images are re-built and are
+up-to-date (should be fast assuming docker layers are cached by default).
 
-> You can use any of the plugins above to generate applications as well.
+## Nuking database
 
-When using Nx, you can create multiple applications and libraries in the same workspace.
+Postgres data land resides at `./tmp/postgres` so at any point you could
+stop relevant services (or just `Ctrl-c` in case of `docker-compose up` and
+remove it's contents `rm -fr tmp/postgres`. Starting your cluster should result
+in completely fresh DB seeded by `./prisma/seed.ts`. Easy peasy.
 
-## Generate a library
+## Advanced usage
 
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
+For more control over the deployment, keep on reading.
 
-> You can also use any of the plugins above to generate libraries as well.
+### Architecture
 
-Libraries are shareable across libraries and applications. They can be imported from `@balance/mylib`.
+In it's simplest form (which is expected to be used in production), project
+consists of an NGINX webserver, APP (front end business logic), API (back end business logic)
+and a DB. Each piece can be scaled both vertically and horizontally:
 
-## Development server
+<img src="./architecture-prebuilt-optimized-docker-containers.png" alt="Optimized docker production architecture" width="350" />
 
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
+## Development
 
-## Code scaffolding
+While it's great to keep things simple, development environment requires more
+pieces in order to dynamically respond to code modifications:
 
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
+<img src="./architecture-dev-docker-infra.png" alt="Docker development infra" width="550" />
 
-## Build
+### docker-composer cluster
 
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+As mentioned in **Quick Start**, the easiest way to set up development
+environment is to run:
 
-## Running unit tests
+```bash
+docker-compose up --remove-orphans --build
+```
 
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
+however, it's not the only way to spin up the project...
 
-Run `nx affected:test` to execute the unit tests affected by a change.
+### run docker images manually
 
-## Running end-to-end tests
+In order to have full control over cluster setup, you could build each docker
+image separately and orchestrate them anyway you see fit. Please find the
+instructions below on how to build and run each docker image separately.
 
-Run `nx e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
+- First, make sure to have environment variables in place
 
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
+  ```bash
+  cp .env.example .env
+  ```
 
-## Understand your workspace
+- Build
 
-Run `nx graph` to see a diagram of the dependencies of your projects.
+  ```bash
+  DOCKER_BUILDKIT=1 docker build -t balance/api -f apps/api/Dockerfile .
+  # Pay attention we're targetting builder stage specifically! All we need here
+  # is `npm install` so that we could run `npm run serve:web` to develop the
+  # app rather than having nginx serving static dist/ folder
+  DOCKER_BUILDKI=1 docker build --target builder -t balance/app -f apps/front-website/Dockerfile .
+  ```
 
-## Further help
+- Finally, run all the things:
 
-Visit the [Nx Documentation](https://nx.dev) to learn more.
+  ```bash
+  # DB
+  docker run -it --rm -e POSTGRES_DB=prisma -e POSTGRES_USER=prisma \
+  -e POSTGRES_PASSWORD=prisma -p 5432:5432 --name=balance-db \
+  --mount type=bind,source="$(pwd)/tmp/postgres",destination=/var/lib/postgresql/data postgres:14-alpine
 
+  # API - please notice we're loading environment variables from .env and then we overwrite the DB_HOST value - it's required unless both api and db are on same network - I prefer to create less stuff so I'm fine with this overwrite vs network setup. Oh and it will only work on OS X and Linux, Windows has some other resolvable hostname, please check docs
+  docker run -it --rm --env-file .env -e DB_HOST=host.docker.internal -p 3333:3333 --name balance-api balance/api
 
+  # APP
+  docker run -it --rm -p 4200:4200 --name balance-app balance/app npm run serve:web
 
-## ☁ Nx Cloud
+  # NGINX webserver
+  docker run -it --rm -e APP_HOST=host.docker.internal -e APP_PORT=4200 \
+   -e API_HOST=host.docker.internal -e API_PORT=3333 -p 80:80 --name=balance-web \
+   --mount type=bind,source="$(pwd)/nginx.conf.dev.template,destination=/etc/nginx/templates/default.conf.template" nginx:1.19.2
 
-### Distributed Computation Caching & Distributed Task Execution
+  ```
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
+### docker-less
 
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
+In order to run NodeJS part of application directly
+from your host machine, perform following steps:
 
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
+- Make sure you have DB and Nginx, for example you could use existing configuration
 
-Visit [Nx Cloud](https://nx.app/) to learn more.
+  ```bash
+  docker-compose up webserver postgres --remove-orphans --build
+  ```
+
+- Install NPM dependencies and run development servers:
+
+  ```bash
+  npm install && npm run serve:all
+  ```
+
+### On premise Production
+
+Regardless to which deployment method you choose for on premise production, you'd probably need to build optimized docker images. For optimized docker images you'd need to:
+
+- make sure to setup DB and fill in production values in `.env` file
+
+- Build and run API:
+
+  ```bash
+  DOCKER_BUILDKI=1 docker build -t balance/api -f apps/api/Dockerfile .
+  docker run -it --rm --env-file .env -p 443:443 --name balance-api balance/api
+  ```
+
+- Build and run app (with nginx built-in):
+
+  ```bash
+  DOCKER_BUILDKI=1 docker build -t balance/web -f apps/front-website/Dockerfile .
+  docker run -it --rm -p 443:443 -e API_HOST={YOUR API DOMAIN NAME} -e API_PORT=443 --name balance-web balance/web
+  ```
+
+### Managed production
+
+Yay! Check out https://render.com/ and out of the box working [cluster
+configuration](./render.yaml) of this project ([LIVE DEMO](https://balance.sergeylukin.com/)).
+
+## Tips for development
+
+### NPM dependencies versioning
+
+In order to avoid surprises with dependencies, it's recommended to keep
+versioning locked. You can use this script to lock your versions in
+`package.json` as they appear in `package-lock.json`:
+
+```
+$ bash <(curl -s https://raw.githubusercontent.com/sergeylukin/npmlock.sh/main/npmlock.sh)
+```
+
+### Migrations and docker compose
+
+Because docker compose stack runs in it's own network and `.env` is configured
+with this setup in mind, running migration from host machine will not work.
+As a workaround, before running migration (i.e. `npm run prisma:migrate my_migration_name`) modify `.env` file by modifying `DB_HOST` to `localhost`
+and then rolling it back after the migration process is finished.

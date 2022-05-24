@@ -4,8 +4,17 @@
   "license": "MIT",
   "scripts": {
     "start": "nx serve",
-    "build": "nx build",
-    "test": "nx test"
+    "serve:api": "NODE_ENV=development nx run api:serve --host 0.0.0.0",
+    "serve:web": "NODE_ENV=development nx serve front-website --host 0.0.0.0",
+    "serve:all": "export DB_HOST='localhost' && npm run prisma:apply && concurrently \"npm run serve:api\" \"npm run serve:web\"",
+    "build:api": "npm run prisma:generate && NODE_ENV=production nx build api",
+    "build:web": "NODE_ENV=production nx build front-website",
+    "build": "concurrently \"npm run build:api\" \"npm run buildweb\"",
+    "test": "nx test",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev --name",
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:apply": "npm run prisma:generate && npm run prisma:migrate init && npm run prisma:seed"
   },
   "private": true,
   "devDependencies": {
@@ -53,7 +62,9 @@
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@prisma/client": "^3.14.0",
     "core-js": "^3.6.5",
+    "prisma": "^3.14.0",
     "react": "18.1.0",
     "react-dom": "18.1.0",
     "react-router-dom": "6.3.0",
