@@ -1,0 +1,81 @@
+previewsEnabled: true
+previewsExpireAfterDays: 1
+services:
+  - type: web
+    name: api
+    env: docker
+    domains:
+      - balance-api.sergeylukin.com
+    dockerfilePath: ./apps/api/Dockerfile
+    repo: https://github.com/sergeylukin/balance-assignment-project
+    dockerCommand: ./apps/api/entrypoint.sh
+    healthCheckPath: /api
+    numInstances: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: DB_HOST
+        fromDatabase:
+          name: balance-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: balance-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: balance-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: balance-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: balance-db
+          property: database
+  - type: web
+    name: app
+    env: static
+    domains:
+      - balance.sergeylukin.com
+    buildCommand: 'npm run build:web'
+    staticPublishPath: ./dist/apps/front-website
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: sameorigin
+    envVars:
+      - key: NODE_VERSION
+        value: 14.5.0
+      - key: NODE_ENV
+        value: production
+      - key: API_HOST
+        fromService:
+          type: web
+          name: api
+          property: host
+      - key: API_PORT
+        fromService:
+          type: web
+          name: api
+          property: port
+    routes:
+      - type: rewrite
+        source: /api/
+        destination: 'https://balance-api.sergeylukin.com/api/'
+      - type: redirect
+        source: /api
+        destination: '/api/'
+      - type: rewrite
+        source: /api/*
+        destination: 'https://balance-api.sergeylukin.com/api/*'
+databases:
+  - name: balance-db
+    databaseName: balance
+    ipAllowList: []
+    plan: starter
+    previewPlan: starter
+    postgresMajorVersion: 14
