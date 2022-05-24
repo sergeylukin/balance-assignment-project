@@ -1,0 +1,23 @@
+{
+  "root": "libs/front-website/api",
+  "sourceRoot": "libs/front-website/api/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/front-website/api/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/front-website/api"],
+      "options": {
+        "jestConfig": "libs/front-website/api/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

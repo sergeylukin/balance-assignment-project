@@ -1,54 +1,28 @@
-import styled from '@emotion/styled';
-import NxWelcome from './nx-welcome';
+import { useStoreRehydrated } from 'easy-peasy';
+import { Route } from 'react-router-dom';
+import { extendTheme, ChakraProvider } from '@chakra-ui/react';
 
-import { Route, Routes, Link } from 'react-router-dom';
+import { Home } from './home/home';
+import { ReactJSXElement } from '@emotion/react/types/jsx-namespace';
 
-const StyledApp = styled.div`
-  // Your style here
-`;
+const colors = {
+  brand: {
+    500: '#2a69ac',
+  },
+};
+
+const theme = extendTheme({ colors });
+
+const ui = (child: ReactJSXElement) => (
+  <ChakraProvider theme={theme}>{child}</ChakraProvider>
+);
 
 export function App() {
-  return (
-    <StyledApp>
-      <NxWelcome title="front-website" />
-
-      {/* START: routes */}
-      {/* These routes and navigation have been generated for you */}
-      {/* Feel free to move and update them to fit your needs */}
-      <br />
-      <hr />
-      <br />
-      <div role="navigation">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/page-2">Page 2</Link>
-          </li>
-        </ul>
-      </div>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              This is the generated root route.{' '}
-              <Link to="/page-2">Click here for page 2.</Link>
-            </div>
-          }
-        />
-        <Route
-          path="/page-2"
-          element={
-            <div>
-              <Link to="/">Click here to go back to root page.</Link>
-            </div>
-          }
-        />
-      </Routes>
-      {/* END: routes */}
-    </StyledApp>
+  const isRehydrated = useStoreRehydrated();
+  return isRehydrated ? (
+    <Route path="/" exact render={() => ui(<Home />)} />
+  ) : (
+    <div>Loading...</div>
   );
 }
 

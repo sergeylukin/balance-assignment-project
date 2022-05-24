@@ -1,5 +1,5 @@
 {
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "apps/front-website",
   "sourceRoot": "apps/front-website/src",
   "projectType": "application",
   "targets": {
@@ -24,12 +24,6 @@
         "webpackConfig": "@nrwl/react/plugins/webpack"
       },
       "configurations": {
-        "development": {
-          "extractLicenses": false,
-          "optimization": false,
-          "sourceMap": true,
-          "vendorChunk": true
-        },
         "production": {
           "fileReplacements": [
             {
@@ -48,15 +42,12 @@
     },
     "serve": {
       "executor": "@nrwl/web:dev-server",
-      "defaultConfiguration": "development",
       "options": {
         "buildTarget": "front-website:build",
-        "hmr": true
+        "hmr": true,
+        "proxyConfig": "apps/front-website/proxy.conf.json"
       },
       "configurations": {
-        "development": {
-          "buildTarget": "front-website:build:development"
-        },
         "production": {
           "buildTarget": "front-website:build:production",
           "hmr": false
@@ -74,10 +65,10 @@
       "executor": "@nrwl/jest:jest",
       "outputs": ["coverage/apps/front-website"],
       "options": {
-        "jestConfig": "apps/front-website/jest.config.ts",
+        "jestConfig": "apps/front-website/jest.config.js",
         "passWithNoTests": true
       }
     }
   },
-  "tags": []
+  "tags": ["ui"]
 }

@@ -5,7 +5,9 @@
     "api": "apps/api",
     "api-interfaces": "libs/api-interfaces",
     "front-website": "apps/front-website",
+    "front-website-api": "libs/front-website/api",
     "front-website-e2e": "apps/front-website-e2e",
+    "front-website-feature-pivots-list": "libs/front-website/feature-pivots-list",
     "shared-csv": "libs/shared/csv"
   }
 }

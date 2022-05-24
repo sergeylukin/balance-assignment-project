@@ -7,3 +7,6 @@ npx nx g @nrwl/js:library --name=api-interfaces
 npx nx g @nrwl/js:library --name=shared/csv
 npm i --save ts-transformer-keys
 npm i --save swagger-ui-express
+npm i --save easy-peasy @chakra-ui/icons @chakra-ui/react framer-motion
+npx nx g @nrwl/js:library --name=front-website/api
+npx nx g @nrwl/react:library --name=front-website/feature-pivots-list
