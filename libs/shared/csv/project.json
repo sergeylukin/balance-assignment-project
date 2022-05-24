@@ -1,0 +1,32 @@
+{
+  "root": "libs/shared/csv",
+  "sourceRoot": "libs/shared/csv/src",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/csv",
+        "main": "libs/shared/csv/src/index.ts",
+        "tsConfig": "libs/shared/csv/tsconfig.lib.json",
+        "assets": ["libs/shared/csv/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/shared/csv/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/shared/csv"],
+      "options": {
+        "jestConfig": "libs/shared/csv/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

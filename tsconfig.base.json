@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@balance/api-interfaces": ["libs/api-interfaces/src/index.ts"]
+      "@balance/api-interfaces": ["libs/api-interfaces/src/index.ts"],
+      "@balance/shared/csv": ["libs/shared/csv/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
