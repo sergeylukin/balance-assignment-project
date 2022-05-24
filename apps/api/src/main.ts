@@ -11,8 +11,8 @@ import { AppModule } from './app/app.module';
 
 const configureSwagger = (app) => {
   const options = new DocumentBuilder()
-    .setTitle('Justt another API')
-    .setDescription('REST API for Justt project')
+    .setTitle('PivotBalance API')
+    .setDescription('REST API for PivotBalance')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, options);
