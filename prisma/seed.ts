@@ -15,11 +15,11 @@ async function main() {
   for (let pivot of seeds.pivots) {
     const pivotExists = await prisma.pivot.count({
       where: {
-        id: pivot.id,
+        id: 1,
       },
     });
     if (!pivotExists) {
-      console.log(`inserting pivot with id ${pivot.id}`);
+      console.log(`inserting first pivot`);
       await prisma.pivot.create({ data: pivot });
     }
   }
